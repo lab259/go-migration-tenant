@@ -1,4 +1,4 @@
-# go-tenant-migration
+# go-tenant-migration [![CircleCI](https://circleci.com/gh/lab259/go-migration-tenant.svg?style=shield)](https://circleci.com/gh/lab259/go-migration-tenant) [![codecov](https://codecov.io/gh/lab259/go-migration-tenant/branch/master/graph/badge.svg)](https://codecov.io/gh/lab259/go-migration-tenant) [![Go Report Card](https://goreportcard.com/badge/github.com/lab259/go-migration-tenant)](https://goreportcard.com/report/github.com/lab259/go-migration-tenant) [![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](https://github.com/go-gormigrate/gormigrate/blob/master/LICENSE) [![GoDoc](https://godoc.org/graphql.co/graphql?status.svg)](https://godoc.org/github.com/lab259/go-migration-tenant)
 
 go-tenant-migration, or mtnt for short, is designed to run migrations on tenants
 in parallel.
