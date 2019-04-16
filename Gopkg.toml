@@ -1,0 +1,19 @@
+[[override]]
+  source = "https://github.com/fsnotify/fsnotify/archive/v1.4.7.tar.gz"
+  name = "gopkg.in/fsnotify.v1"
+  
+[[constraint]]
+  branch = "master"
+  name = "github.com/globalsign/mgo"
+  
+[[constraint]]
+  branch = "master"
+  name = "github.com/lab259/go-migration"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/lab259/go-prdcsm"
+
+[prune]
+  go-tests = true
+  unused-packages = true
