@@ -66,9 +66,11 @@ func (e *MigrationExecutor) migrate(account Account) error {
 		if err != nil {
 			return err
 		}
+		e.reporter.BeforeAccount(account)
 		manager := migration.NewDefaultManager(target, e.source)
 		runner := migration.NewArgsRunnerCustom(e.migrationReporter, manager, os.Exit, e.args...)
 		runner.Run(executionContext)
+		e.reporter.AfterAccount(account)
 		return nil
 	})
 }

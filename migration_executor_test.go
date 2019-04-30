@@ -29,24 +29,32 @@ func (account *FakeAccount) ProvideMigrationContext(fnc func(executionContext in
 }
 
 type FakeAccountProducer struct {
-	session *mgo.Session
-	hasNext bool
+	session  *mgo.Session
+	hasNext  bool
+	account1 *FakeAccount
+	account2 *FakeAccount
+	account3 *FakeAccount
+	account4 *FakeAccount
 }
 
 func (producer *FakeAccountProducer) Get() ([]mtnt.Account, error) {
+	producer.account1 = &FakeAccount{
+		db: producer.session.DB("database1"),
+	}
+	producer.account2 = &FakeAccount{
+		db: producer.session.DB("database2"),
+	}
+	producer.account3 = &FakeAccount{
+		db: producer.session.DB("database3"),
+	}
+	producer.account4 = &FakeAccount{
+		db: producer.session.DB("database4"),
+	}
 	return []mtnt.Account{
-		&FakeAccount{
-			db: producer.session.DB("database1"),
-		},
-		&FakeAccount{
-			db: producer.session.DB("database2"),
-		},
-		&FakeAccount{
-			db: producer.session.DB("database3"),
-		},
-		&FakeAccount{
-			db: producer.session.DB("database4"),
-		},
+		producer.account1,
+		producer.account2,
+		producer.account3,
+		producer.account4,
 	}, nil
 }
 
@@ -58,6 +66,19 @@ func (producer *FakeAccountProducer) HasNext() bool {
 
 func (producer *FakeAccountProducer) Total() int {
 	return 4
+}
+
+type FakeReporter struct {
+	accountsBefore []mtnt.Account
+	accountsAfter  []mtnt.Account
+}
+
+func (reporter *FakeReporter) BeforeAccount(account mtnt.Account) {
+	reporter.accountsBefore = append(reporter.accountsBefore, account)
+}
+
+func (reporter *FakeReporter) AfterAccount(account mtnt.Account) {
+	reporter.accountsAfter = append(reporter.accountsAfter, account)
 }
 
 var _ = Describe("MigrationExecutor", func() {
@@ -101,12 +122,17 @@ var _ = Describe("MigrationExecutor", func() {
 			return nil
 		}))
 		logger := rlog.WithFields(nil)
-		executor := mtnt.NewMigrationExecutor(migrationRLog.NewRLogReporter(logger, func(i int) {
-			Fail("exit should not be called")
-		}), mtntRLog.NewRLogReporter(logger), mongo.Connector, &FakeAccountProducer{
+		r := &FakeReporter{
+			accountsBefore: make([]mtnt.Account, 0),
+			accountsAfter:  make([]mtnt.Account, 0),
+		}
+		accountProducer := &FakeAccountProducer{
 			session: session,
 			hasNext: true,
-		}, source)
+		}
+		executor := mtnt.NewMigrationExecutor(migrationRLog.NewRLogReporter(logger, func(i int) {
+			Fail("exit should not be called")
+		}), r, mongo.Connector, accountProducer, source)
 		executor.Run(1, "migrate")
 
 		dbs, err := session.DatabaseNames()
@@ -117,6 +143,9 @@ var _ = Describe("MigrationExecutor", func() {
 		Expect(dbs).To(ContainElement("database4"))
 		Expect(execution).To(HaveLen(12))
 		Expect(execution).To(ConsistOf("1", "2", "3", "1", "2", "3", "1", "2", "3", "1", "2", "3"))
+
+		Expect(r.accountsBefore).To(ConsistOf(accountProducer.account1, accountProducer.account2, accountProducer.account3, accountProducer.account4))
+		Expect(r.accountsAfter).To(ConsistOf(accountProducer.account1, accountProducer.account2, accountProducer.account3, accountProducer.account4))
 	})
 
 	It("should migrate with 3 worker", func() {
