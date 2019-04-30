@@ -92,10 +92,12 @@ var _ = Describe("MigrationExecutor", func() {
 		Expect(err).ToNot(HaveOccurred())
 		for _, db := range dbs {
 			switch db {
-			case "admin", "config", "local", "test":
-				continue
+			case "database1", "database2", "database3", "database4":
+				Expect(session.DB(db).DropDatabase()).To(Succeed())
+			default:
+				// Just ignore the database.
 			}
-			Expect(session.DB(db).DropDatabase()).To(Succeed())
+
 		}
 	})
 
