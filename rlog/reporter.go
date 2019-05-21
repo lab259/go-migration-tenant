@@ -20,7 +20,7 @@ func NewRLogReporter(logger rlog2.Logger) *rLogReporter {
 }
 
 func (reporter *rLogReporter) BeforeAccount(account mtnt.Account) {
-	reporter.logger.Info("Migrating %s", styleAccountID(account.Identification()))
+	reporter.logger.Infof("Migrating %s", styleAccountID(account.Identification()))
 }
 
 func (reporter *rLogReporter) AfterAccount(account mtnt.Account) {}
