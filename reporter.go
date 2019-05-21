@@ -21,7 +21,7 @@ func NewDefaultReporter(writer io.Writer) *defaultReporter {
 }
 
 func (reporter *defaultReporter) BeforeAccount(account Account) {
-	fmt.Fprintf(reporter.Writer, "Migrating %s", styleAccountID(account.Identification()))
+	fmt.Fprintf(reporter.Writer, "Migrating %s\n", styleAccountID(account.Identification()))
 }
 
 func (reporter *defaultReporter) AfterAccount(account Account) {
