@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/lab259/go-migration"
-	"github.com/lab259/go-prdcsm"
+	"github.com/lab259/go-prdcsm/v2"
 )
 
 // MigrationExecutor runs all migrations in all accounts listed by the `AccountProducer`.
@@ -14,7 +14,7 @@ type MigrationExecutor struct {
 	migrationReporter migration.Reporter
 	producer          AccountProducer
 	source            migration.Source
-	pool              *prdcsm.Pool
+	pool              prdcsm.Pool
 	args              []string
 }
 
@@ -34,11 +34,13 @@ func (e *MigrationExecutor) Run(workers int, args ...string) {
 	e.args = args
 	producer := newAccountProducerProxy(e, e.producer, workers*2)
 
-	e.pool = &prdcsm.Pool{
+	e.pool = prdcsm.NewPool(prdcsm.PoolConfig{
+		Workers:  workers,
 		Consumer: e.consumer,
 		Producer: producer,
-	}
-	e.pool.Run(workers)
+	})
+	e.pool.Start()
+	e.pool.Wait()
 }
 
 // Stop stops the running pool of workers.
@@ -46,7 +48,7 @@ func (e *MigrationExecutor) Stop() {
 	if e.pool == nil {
 		return
 	}
-	e.pool.Stop()
+	e.pool.Stop() // Stop already waits for the pool to finish gracefully.
 	e.pool = nil
 }
 
