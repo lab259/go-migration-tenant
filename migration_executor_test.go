@@ -5,7 +5,7 @@ import (
 
 	"github.com/globalsign/mgo"
 	"github.com/lab259/go-migration"
-	"github.com/lab259/rlog"
+	"github.com/lab259/rlog/v2"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 

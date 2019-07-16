@@ -1,66 +1,43 @@
-VERSION ?= $(shell git describe --tags 2>/dev/null | cut -c 2-)
-TEST_FLAGS ?=
-REPO_OWNER ?= $(shell cd .. && basename "$$(pwd)")
-
-GOPATH=$(CURDIR)/../../../../
-GOPATHCMD=GOPATH=$(GOPATH)
-
 COVERDIR=$(CURDIR)/.cover
 COVERAGEFILE=$(COVERDIR)/cover.out
+COVERAGEREPORT=$(COVERDIR)/report.html
 
 test:
-	@${GOPATHCMD} ginkgo --failFast ./...
+	@ginkgo --failFast ./...
 
 test-watch:
-	@${GOPATHCMD} ginkgo watch -cover -r ./...
-
-coverage:
-	@mkdir -p $(COVERDIR)
-	@${GOPATHCMD} ginkgo -r -covermode=count --cover --trace ./
-	@echo "mode: count" > "${COVERAGEFILE}"
-	@find . -type f -name *.coverprofile -exec grep -h -v "^mode:" {} >> "${COVERAGEFILE}" \; -exec rm -f {} \;
+	@ginkgo watch -cover -r ./...
 
 coverage-ci:
 	@mkdir -p $(COVERDIR)
-	@${GOPATHCMD} ginkgo -r -covermode=count --cover --trace ./
+	@ginkgo -r -covermode=count --cover --trace ./
 	@echo "mode: count" > "${COVERAGEFILE}"
-	@find . -type f -name *.coverprofile -exec grep -h -v "^mode:" {} >> "${COVERAGEFILE}" \; -exec rm -f {} \;
+	@find . -type f -name '*.coverprofile' -exec cat {} \; -exec rm -f {} \; | grep -h -v "^mode:" >> ${COVERAGEFILE}
+
+coverage: coverage-ci
+	@sed -i -e "s|_$(PROJECT_ROOT)/|./|g" "${COVERAGEFILE}"
+	@cp "${COVERAGEFILE}" coverage.txt
 
 coverage-html:
-	@$(GOPATHCMD) go tool cover -html="${COVERAGEFILE}" -o .cover/report.html
-
-dep-ensure:
-	@$(GOPATHCMD) dep ensure -v
-
-dep-add:
-ifdef PACKAGE
-	@$(GOPATHCMD) dep ensure -add -v $(PACKAGE)
-else
-	@echo "PACKAGE envvar is not defined"
-endif
-
-dep-update:
-	@$(GOPATHCMD) dep ensure -v -update
+	@go tool cover -html="${COVERAGEFILE}" -o $(COVERAGEREPORT)
+	@xdg-open $(COVERAGEREPORT) 2> /dev/null > /dev/null
 
 dcup:
-	docker-compose up -d
+	@docker-compose up -d
 
 dcdn:
-	docker-compose down --remove-orphans
+	@docker-compose down --remove-orphans
 
 vet:
-	@$(GOPATHCMD) go vet ./...
+	@go vet ./...
 
 lint:
-	@$(GOPATHCMD) golint
+	@golint
 
 fmt:
-	@$(GOPATHCMD) go fmt ./...
+	@go fmt ./...
 
-.PHONY: build-cli clean test-short test test-with-flags deps html-coverage \
-        restore-import-paths rewrite-import-paths list-external-deps release \
-        docs kill-docs open-docs kill-orphaned-docker-containers dep-ensure \
-        dep-update
+.PHONY: test test-watch coverage coverage-ci coverage-html dcup dcdn vet lint fmt
 
 SHELL = /bin/bash
 RAND = $(shell echo $$RANDOM)

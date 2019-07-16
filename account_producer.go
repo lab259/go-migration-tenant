@@ -3,7 +3,7 @@ package mtnt
 import (
 	"sync"
 
-	"github.com/lab259/go-prdcsm"
+	"github.com/lab259/go-prdcsm/v2"
 )
 
 // AccountProducer should list all the accounts that should be migrated.

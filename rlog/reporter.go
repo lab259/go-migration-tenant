@@ -2,7 +2,7 @@ package rlog
 
 import (
 	"github.com/fatih/color"
-	rlog2 "github.com/lab259/rlog"
+	rlog2 "github.com/lab259/rlog/v2"
 
 	mtnt "github.com/lab259/go-migration-tenant"
 )
