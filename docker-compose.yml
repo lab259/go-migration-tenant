@@ -7,6 +7,4 @@ services:
       - MONGO_INITDB_DATABASE=test
     ports:
       - 27017:27017
-    volumes:
-      - ./.docker/volumes/mongo-data:/data/db
-      - ./.docker/mongo/entrypoint:/docker-entrypoint-initdb.d
+    tmpfs: /data/db
